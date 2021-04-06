@@ -9,35 +9,38 @@ from bs4 import BeautifulSoup
 startDate = datetime.now()
 s = r.Session()
 
-_webhookUrl = ""   #Discord webhook url
-_user = ""   #Username for Elevcentralen
-_pass = ""   #Password for Elevcentralen
-_days = 80   #How many days from today to lookout for new lessons. A date beyond what the website can show will give wrong api response
+conf = {}
+with open("config.txt") as f:
+    for line in f:
+      (key, val) = line.replace("\n", "").replace(" ", "").split("=")
+      conf[key] = val
 
 bookings = []
 def main():
-    auth(_user, _pass)
+    auth(conf["Username"], conf["Password"])
     teachers = getTeachers()
-    listBookings(_days, teachers)
+    listBookings(conf["Days"], teachers)
     errors()    
-    webHook("New lessons will appear here!", "Attention!", _webhookUrl)
+    webHook("New lessons will appear here!", "Attention!", conf["WebhookUrl"])
+
     while True:
         print("Checking " + str(len(bookings)) + " lessons")
         oldBookingNames = []
         for x in bookings:
             oldBookingNames.append(x["formattedTitleDateAndTime"])
 
-        listBookings(_days, teachers)
+        listBookings(conf["Days"], teachers)
 
         for x in bookings:
             if x["formattedTitleDateAndTime"] not in oldBookingNames:
-                webHook(x["formattedTitleDateAndTime"], "New lession!",  _webhookUrl)
+
+                webHook(x["formattedTitleDateAndTime"] + " - " +  x["employees"][0]["name"], "New lession!",  _webhookUrl)
                 print("New Lesson! "+ x["formattedTitleDateAndTime"])
         
         t.sleep(5)
 
 def listBookings(days, teachers):
-    endDate = datetime.now() + timedelta(days)
+    endDate = datetime.now() + timedelta(int(days))
     url = "https://www.elevcentralen.se/Booking/Home/Data/"
 
     payload = json.dumps({
