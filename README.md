@@ -11,6 +11,6 @@ WebhookUrl = https://discord.com/api/webhooks/8421977434516213338/D-CUEVyG2F0fIq
 Days = 80
 
 # config.txt info
-Days is how many days from today to lookout for new lessons. A date beyond a teachers planned schedule will give wrong api response.
+Days is how many days from today to lookout for new lessons
 
 If you dont know how to make a Discord webhook, check this video out: https://www.youtube.com/watch?v=fKksxz2Gdnc

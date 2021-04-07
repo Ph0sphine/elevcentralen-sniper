@@ -14,13 +14,12 @@ with open("config.txt") as f:
     for line in f:
       (key, val) = line.replace("\n", "").replace(" ", "").split("=")
       conf[key] = val
+conf["Days"] = int(conf["Days"])      
 
-bookings = []
 def main():
     auth(conf["Username"], conf["Password"])
     teachers = getTeachers()
-    listBookings(conf["Days"], teachers)
-    errors()    
+    bookings = listBookings(conf["Days"], teachers)
     webHook("New lessons will appear here!", "Attention!", conf["WebhookUrl"])
 
     while True:
@@ -29,18 +28,17 @@ def main():
         for x in bookings:
             oldBookingNames.append(x["formattedTitleDateAndTime"])
 
-        listBookings(conf["Days"], teachers)
+        bookings = listBookings(conf["Days"], teachers)
 
         for x in bookings:
             if x["formattedTitleDateAndTime"] not in oldBookingNames:
-
-                webHook(x["formattedTitleDateAndTime"] + " - " +  x["employees"][0]["name"], "New lession!",  conf["WebhookUrl"])
+                webHook("{} - Week: {} - {}".format(x["formattedTitleDateAndTime"], x["week"], x["employees"][0]["name"]), "New lession!", conf["WebhookUrl"])
                 print("New Lesson! "+ x["formattedTitleDateAndTime"])
-        
-        t.sleep(5)
 
+        t.sleep(5)
 def listBookings(days, teachers):
-    endDate = datetime.now() + timedelta(int(days))
+    checkDate = False
+    endDate = datetime.now() + timedelta(days)
     url = "https://www.elevcentralen.se/Booking/Home/Data/"
 
     payload = json.dumps({
@@ -62,14 +60,18 @@ def listBookings(days, teachers):
     "Content-Type": "application/json",
     }
 
-    global bookingsResponse
-    global bookings
-
     bookingsResponse = s.request("POST", url, headers=headers, data=payload)
-    try:
-        bookings = bookingsResponse.json()["items"]
-    except:
-        print("[ERROR] Json parsing failed!, request timeout?")
+
+    for msg in bookingsResponse.json()["messages"]:
+        if "Du har bläddrat för långt" in msg["message"]:
+            checkDate = True
+    
+    if checkDate == True:
+        print("{} Days was too much, trying again...".format(conf["Days"]))
+        conf["Days"] -= 5
+        return listBookings(conf["Days"], teachers)
+    else:
+        return bookingsResponse.json()["items"]
 
 def auth(Username, Password): 
     s.cookies.clear
@@ -110,7 +112,7 @@ def webHook(lession, title, url):
 def getTeachers():
     teachersIdlist = []
     response = s.request("GET", "https://www.elevcentralen.se/en/Booking")
-    soup = BeautifulSoup(response.content, 'html.parser')
+    soup = BeautifulSoup(response.content, "html.parser")
     div = soup.find("div", {"class": "list-group teachers"})
     labels = div.findAll("label")
 
@@ -127,16 +129,6 @@ def getTeachers():
         print("Selected: " + labels[int(i)]["data-name"] + " : " + labels[int(i)]["data-id"])
 
     return teachersIdlist
-
-def errors():
-    try:
-        if "Du har bl\\u00E4ddrat f\\u00F6r l\\u00E5ngt" in bookingsResponse.text:
-            print("[ERROR] Time period was to long, please lower your days")
-            input()
-            quit()
-    except SystemExit:
-        quit()
-
 
 if __name__ == "__main__":
     main()
