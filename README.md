@@ -13,5 +13,5 @@ Get notified when new driving lessons are available with Discord webhooks.
 
 ### Install
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
