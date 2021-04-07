@@ -34,7 +34,7 @@ def main():
         for x in bookings:
             if x["formattedTitleDateAndTime"] not in oldBookingNames:
 
-                webHook(x["formattedTitleDateAndTime"] + " - " +  x["employees"][0]["name"], "New lession!",  _webhookUrl)
+                webHook(x["formattedTitleDateAndTime"] + " - " +  x["employees"][0]["name"], "New lession!",  conf["WebhookUrl"])
                 print("New Lesson! "+ x["formattedTitleDateAndTime"])
         
         t.sleep(5)
