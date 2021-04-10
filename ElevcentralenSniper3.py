@@ -61,17 +61,21 @@ def listBookings(days, teachers):
     }
 
     bookingsResponse = s.request("POST", url, headers=headers, data=payload)
-
-    for msg in bookingsResponse.json()["messages"]:
-        if "Du har bläddrat för långt" in msg["message"]:
-            checkDate = True
-    
-    if checkDate == True:
-        print("{} Days was too much, trying again...".format(conf["Days"]))
-        conf["Days"] -= 5
+    try:
+        for msg in bookingsResponse.json()["messages"]:
+            if "Du har bläddrat för långt" in msg["message"]:
+                checkDate = True
+        
+        if checkDate == True:
+            print("{} Days was too much, trying again...".format(conf["Days"]))
+            conf["Days"] -= 5
+            return listBookings(conf["Days"], teachers)
+        else:
+            return bookingsResponse.json()["items"]
+    except:
+        print("Error, trying again.")
+        t.sleep(2)
         return listBookings(conf["Days"], teachers)
-    else:
-        return bookingsResponse.json()["items"]
 
 def auth(Username, Password): 
     s.cookies.clear
