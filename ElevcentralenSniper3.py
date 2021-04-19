@@ -68,10 +68,16 @@ def listBookings(days, teachers):
         
         if checkDate == True:
             print("{} Days was too much, trying again...".format(conf["Days"]))
-            conf["Days"] -= 5
+            conf["Days"] -= 1
             return listBookings(conf["Days"], teachers)
         else:
-            return bookingsResponse.json()["items"]
+            #return bookingsResponse.json()["items"]
+            bookableRespone = []
+            for x in bookingsResponse.json()["items"]:
+                if x["isPersonBookable"]:
+                    bookableRespone.append(x)
+            return bookableRespone
+                
     except:
         print("Error, trying again.")
         t.sleep(2)
