@@ -32,7 +32,7 @@ def main():
 
         for x in bookings:
             if x["formattedTitleDateAndTime"] not in oldBookingNames:
-                webHook("{} - Week: {} - {}".format(x["formattedTitleDateAndTime"], x["week"], x["employees"][0]["name"]), "New lession!", conf["WebhookUrl"])
+                webHook("{} - Week: {} - {}".format(x["formattedTitleDateAndTime"], x["week"], x["employees"][0]["name"]), "New lesson!", conf["WebhookUrl"])
                 print("New Lesson! "+ x["formattedTitleDateAndTime"])
 
         t.sleep(5)
@@ -103,12 +103,12 @@ def auth(Username, Password):
     global studentId
     studentId = re.search("\$\.sc\.person\.id = (\d*)", response.text).group(1)
     
-def webHook(lession, title, url):
+def webHook(lesson, title, url):
     payload = json.dumps({
     "embeds":
         [{
             "title": title,
-            "description": "@everyone " + lession,
+            "description": "@everyone " + lesson,
             "url": "https://www.elevcentralen.se/en/Booking",
             "color": 3061343
         }]
